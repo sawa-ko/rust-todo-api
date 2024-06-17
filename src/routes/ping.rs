@@ -2,7 +2,9 @@ use rocket::get;
 use rocket::serde::json::Json;
 use rocket::serde::Serialize;
 use sea_orm_rocket::Connection;
-use crate::pool::Db;
+
+use database::Db;
+
 use crate::routes::ResponseRequest;
 
 #[derive(Serialize)]

@@ -477,6 +477,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "database"
+version = "0.1.0"
+dependencies = [
+ "rocket",
+ "sea-orm",
+ "sea-orm-rocket",
+]
+
+[[package]]
 name = "der"
 version = "0.7.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2876,6 +2885,7 @@ name = "todo_api"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "database",
  "rocket",
  "sea-orm",
  "sea-orm-rocket",

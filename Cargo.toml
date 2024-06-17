@@ -5,8 +5,19 @@ edition = "2021"
 
 [dependencies]
 rocket = { version = "0.5.1", features = ["json", "serde_json", "secrets", "default"] }
-serde = "1.0.203"
 sea-orm = { version = "0.12.15", features = ["sqlx-postgres", "runtime-tokio-native-tls"] }
+serde = "1.0.203"
 tokio = "1.38.0"
 async-trait = "0.1.80"
+sea-orm-rocket = "0.5.4"
+database = { path = "./crates/database" }
+
+[workspace]
+members = [
+    "crates/database",
+]
+
+[workspace.dependencies]
+rocket = { version = "0.5.1", features = ["json", "serde_json", "secrets", "default"] }
+sea-orm = { version = "0.12.15", features = ["sqlx-postgres", "runtime-tokio-native-tls"] }
 sea-orm-rocket = "0.5.4"

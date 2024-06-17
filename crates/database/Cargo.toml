@@ -1,0 +1,9 @@
+[package]
+name = "database"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rocket = { workspace = true, features = ["json", "serde_json", "secrets", "default"] }
+sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-native-tls"] }
+sea-orm-rocket = { workspace = true }
