@@ -15,8 +15,8 @@ pub struct ManageTodo {
     is_complete: bool
 }
 
-#[post("/task/create", data = "<todo>")]
-pub fn create_task(todo: Form<ManageTodo>) -> Json<ResponseRequest<ManageTodo>> {
+#[post("/create", data = "<todo>")]
+pub async fn create_task(todo: Form<ManageTodo>) -> Json<ResponseRequest<ManageTodo>> {
     let res = ResponseRequest {
         message: Some("Task created successfully".to_string()),
         status: 200,
@@ -26,7 +26,7 @@ pub fn create_task(todo: Form<ManageTodo>) -> Json<ResponseRequest<ManageTodo>> 
     Json(res)
 }
 
-#[patch("/task/update/<id>", data = "<todo>")]
+#[patch("/update/<id>", data = "<todo>")]
 pub fn update_task(todo: Form<ManageTodo>, id: i32) -> Json<ResponseRequest<ManageTodo>> {
     println!("{}", &id);
 
@@ -39,7 +39,7 @@ pub fn update_task(todo: Form<ManageTodo>, id: i32) -> Json<ResponseRequest<Mana
     Json(res)
 }
 
-#[delete("/task/delete/<id>")]
+#[delete("/delete/<id>")]
 pub fn delete_task(id: i32) -> Json<ResponseRequest<i32>> {
     let res = ResponseRequest {
         message: Some("Task deleted successfully".to_string()),
@@ -69,7 +69,7 @@ fn validate_min_params<'v>(value: &Option<i32>, field_name: String) -> form::Res
     Ok(())
 }
 
-#[get("/task?<filter..>")]
+#[get("/?<filter..>")]
 pub fn get_tasks(filter: FilterTasks) -> Json<ResponseRequest<FilterTasks>> {
     let res = ResponseRequest {
         message: None,
