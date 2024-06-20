@@ -28,7 +28,8 @@ impl sea_orm_rocket::Pool for SeaOrmPool {
             .max_connections(config.max_connections as u32)
             .min_connections(config.min_connections.unwrap_or_default())
             .connect_timeout(Duration::from_secs(config.connect_timeout))
-            .sqlx_logging(config.sqlx_logging);
+            .sqlx_logging(true)
+            .sqlx_logging_level(log::LevelFilter::Debug);
 
         if let Some(idle_timeout) = config.idle_timeout {
             options.idle_timeout(Duration::from_secs(idle_timeout));

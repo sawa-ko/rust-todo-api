@@ -11,10 +11,12 @@ tokio = "1.38.0"
 async-trait = "0.1.80"
 sea-orm-rocket = "0.5.4"
 database = { path = "./crates/database" }
+migration = { path = "./crates/migrations" }
 
 [workspace]
 members = [
     "crates/database",
+    "crates/migrations"
 ]
 
 [workspace.dependencies]

@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rocket = { workspace = true, features = ["json", "serde_json", "secrets", "default"] }
-sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-native-tls"] }
+rocket = { workspace = true }
+sea-orm = { workspace = true, features = ["debug-print"] }
 sea-orm-rocket = { workspace = true }
+log = "0.4.21"
+serde = { version = "1.0.203", features = ["derive"] }
