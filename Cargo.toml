@@ -19,6 +19,7 @@ sea-orm-rocket = "0.5.4"
 database = { path = "./crates/database" }
 migration = { path = "./crates/migrations" }
 dotenvy = "0.15.7"
+memory-stats = "1.1.0"
 
 [workspace]
 members = [

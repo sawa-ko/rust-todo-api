@@ -1,3 +1,4 @@
+use memory_stats::{memory_stats};
 use rocket::get;
 use rocket::serde::json::Json;
 use rocket::serde::Serialize;
@@ -12,7 +13,8 @@ use crate::routes::ResponseRequest;
 #[derive(Serialize)]
 pub struct PingApi {
     db_status: bool,
-    tasks_total: usize
+    tasks_total: usize,
+    memory_usage_mb: String
 }
 
 #[get("/ping")]
@@ -26,7 +28,8 @@ pub async fn ping_route(conn: Connection<'_, Db>) -> Json<ResponseRequest<PingAp
         status: 200,
         data: PingApi {
             db_status: db_ping.is_ok(),
-            tasks_total: total_tasks.unwrap().len()
+            tasks_total: total_tasks.unwrap().len(),
+            memory_usage_mb: format!("{} Mb", memory_stats().unwrap().physical_mem / 1024 / 1024)
         }
     };
 
