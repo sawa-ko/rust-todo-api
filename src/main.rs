@@ -1,5 +1,6 @@
 mod routes;
 
+use std::env;
 use rocket::{Build, fairing, Rocket, routes};
 use rocket::fairing::AdHoc;
 use sea_orm_rocket::Database;
@@ -17,7 +18,12 @@ async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
 
 #[tokio::main]
 async fn start_api() -> Result<(), rocket::Error> {
-    rocket::build()
+    let figment = rocket::Config::figment().merge((
+        "databases.sea_orm.url",
+        env::var("DATABASE_URL").expect("Database URL not found")
+    ));
+
+    rocket::custom(figment)
         .mount("/", routes![ping_route])
         .mount("/task", routes![create_task, update_task, delete_task, get_tasks])
         .attach(Db::init())
@@ -28,6 +34,8 @@ async fn start_api() -> Result<(), rocket::Error> {
 }
 
 fn main() {
+    dotenvy::dotenv().expect("Error loading .env file!");
+
     let result = start_api();
 
     println!("Rocket: deorbit.");

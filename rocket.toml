@@ -3,6 +3,3 @@ secret_key = "sL9K2oCtpFrvNHBN8hpngP7HugL7NwiaxbVF2Bk6ZFn2"
 
 [release]
 secret_key = "g7a8Hu//vL7d9aF3lfWsxT6t1k2UMTphbp+FQFKK4grt"
-
-[default.databases.sea_orm]
-url = "postgres://postgres:sawa-ko-sawa@localhost/todolist"

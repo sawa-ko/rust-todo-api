@@ -18,6 +18,7 @@ async-trait = "0.1.80"
 sea-orm-rocket = "0.5.4"
 database = { path = "./crates/database" }
 migration = { path = "./crates/migrations" }
+dotenvy = "0.15.7"
 
 [workspace]
 members = [
@@ -29,3 +30,4 @@ members = [
 rocket = { version = "0.5.1", features = ["json", "serde_json", "secrets", "default"] }
 sea-orm = { version = "0.12.15", features = ["sqlx-postgres", "runtime-tokio-native-tls"] }
 sea-orm-rocket = "0.5.4"
+dotenvy = "0.15.7"
