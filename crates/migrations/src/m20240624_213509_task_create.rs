@@ -33,7 +33,8 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(TaskEntity::Column::IsActive)
                             .boolean()
-                            .default(false),
+                            .default(false)
+                            .not_null(),
                     )
                     .to_owned(),
             )
