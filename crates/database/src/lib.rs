@@ -1,4 +1,4 @@
-mod entities;
+pub mod entities;
 
 use std::time::Duration;
 use rocket::figment::Figment;

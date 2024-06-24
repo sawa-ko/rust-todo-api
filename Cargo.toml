@@ -5,8 +5,9 @@ version = "0.1.0"
 edition = "2021"
 
 [package.metadata.scripts]
-migrations-init = "sea-orm-cli migration init -d ./crates/migrations"
+migrations-init = "sea-orm-cli migrate init -d ./crates/migrations"
 migrations-up = "sea-orm-cli migrate up -d ./crates/migrations"
+migrations-generate = "sea-orm-cli migrate generate -d ./crates/migrations"
 
 [dependencies]
 rocket = { version = "0.5.1", features = ["json", "serde_json", "secrets", "default"] }
