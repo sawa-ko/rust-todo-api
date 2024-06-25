@@ -5,7 +5,6 @@ use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
 use rocket::{delete, form, get, patch, post, FromForm};
 use rocket::http::Status;
-use rocket::response::Responder;
 use rocket::response::status::Custom;
 use sea_orm_rocket::Connection;
 use services::task::mutations::task::{TaskMutation, TaskPayload};

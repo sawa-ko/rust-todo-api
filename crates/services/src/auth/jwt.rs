@@ -16,12 +16,12 @@ pub struct JWT {
 }
 
 impl JWT {
-    pub fn encode(id: i32) -> Result<String, Error> {
+    pub fn encode(id: &i32) -> Result<String, Error> {
         dotenvy::dotenv().expect("Error loading .env file!");
         let secret = env::var("JWT_SECRET");
         let exp = SystemTime::now().add(Duration::from_secs(3600));
         let claims = Claims {
-            sub: id,
+            sub: *id,
             exp: exp.duration_since(SystemTime::UNIX_EPOCH).unwrap().as_secs() as usize
         };
         

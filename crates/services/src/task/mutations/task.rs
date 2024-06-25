@@ -31,7 +31,7 @@ impl TaskMutation {
     }
     
     pub async fn update(task_payload: TaskPayload, id: i32, db: &DbConn) -> Result<Model, DbErr> {
-        let mut task: ActiveModel = Entity::find_by_id(id).one(db).await?.ok_or(DbErr::Custom(String::from("Task not found"))).map(Into::into)?;
+        let mut task: ActiveModel = Entity::find_by_id(id).one(db).await?.ok_or(DbErr::Custom(String::from("Task not found."))).map(Into::into)?;
         
         task.name = Set(task_payload.name.to_owned());
         task.description = Set(task_payload.description.to_owned());
@@ -42,7 +42,7 @@ impl TaskMutation {
     }
     
     pub async fn delete(id: i32, db: &DbConn) -> Result<DeleteResult, DbErr> {
-        let task: ActiveModel = Entity::find_by_id(id).one(db).await?.ok_or(DbErr::Custom(String::from("Task not found"))).map(Into::into)?;
+        let task: ActiveModel = Entity::find_by_id(id).one(db).await?.ok_or(DbErr::Custom(String::from("Task not found."))).map(Into::into)?;
         task.delete(db).await
     }
     
