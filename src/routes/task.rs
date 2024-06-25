@@ -5,8 +5,8 @@ use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
 use rocket::{delete, form, get, patch, post, FromForm};
 use sea_orm_rocket::Connection;
-use services::mutations::task::{TaskMutation, TaskPayload};
-use services::queries::task::{GetAllTasks, PaginationPayload, TaskQueries};
+use services::task::mutations::task::{TaskMutation, TaskPayload};
+use services::task::queries::task::{GetAllTasks, PaginationPayload, TaskQueries};
 use crate::routes::ResponseRequest;
 
 #[derive(Deserialize, Serialize, FromForm)]

@@ -8,3 +8,6 @@ authors = ["sawa-ko <56084970+sawa-ko@users.noreply.github.com>"]
 database = { path = "../database" }
 sea-orm = { workspace = true }
 serde = { workspace = true }
+serde_json = "1.0.118"
+jsonwebtoken = "9.3.0"
+dotenvy = { workspace = true }

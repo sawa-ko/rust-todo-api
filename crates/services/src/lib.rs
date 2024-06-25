@@ -1,2 +1,2 @@
-pub mod mutations;
-pub mod queries;
+pub mod task;
+pub mod auth;
