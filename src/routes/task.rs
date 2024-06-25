@@ -164,3 +164,29 @@ pub async fn get_tasks(filter: FilterTasks, conn: Connection<'_, Db>) -> Json<Re
 
     Json(res)
 }
+#[get("/<id>")]
+pub async fn get_task(
+    id: i32,
+    conn: Connection<'_, Db>,
+) -> Json<ResponseRequest<Option<Task::Model>>> {
+    let db = conn.into_inner();
+    let result = TaskQueries::get_task_by_id(id, db).await;
+
+    if let Err(_) = result {
+        let res = ResponseRequest {
+            message: Some("The task was not found".to_string()),
+            status: 404,
+            data: None,
+        };
+
+        return Json(res);
+    }
+
+    let res = ResponseRequest {
+        message: None,
+        status: 200,
+        data: Some(result.unwrap()),
+    };
+
+    Json(res)
+}
