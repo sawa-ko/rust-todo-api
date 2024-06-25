@@ -9,7 +9,7 @@ use rocket::response::status::Custom;
 use sea_orm_rocket::Connection;
 use services::auth::jwt::{JWT};
 use services::task::mutations::task::{TaskMutation, TaskPayload};
-use services::task::queries::task::{GetAllTasks, PaginationPayload, TaskQueries};
+use services::task::queries::task::{GetAllTasks, GetTask, PaginationPayload, TaskQueries};
 use crate::routes::ResponseRequest;
 
 #[derive(Deserialize, Serialize, FromForm)]
@@ -174,7 +174,7 @@ pub async fn get_task(
     id: i32,
     user: JWT,
     conn: Connection<'_, Db>,
-) -> Custom<Json<ResponseRequest<Option<Task::Model>>>> {
+) -> Custom<Json<ResponseRequest<Option<GetTask>>>> {
     let db = conn.into_inner();
     let result = TaskQueries::get_task_by_id(id, user.claims.sub, db).await;
 
@@ -186,9 +186,9 @@ pub async fn get_task(
                 data: Some(task),
             }))
         }
-        Err(_) => {
+        Err(e) => {
             Custom(Status::NotFound, Json(ResponseRequest {
-                message: Some("The task was not found".to_string()),
+                message: Some(e.to_string()),
                 status: 404,
                 data: None,
             }))
