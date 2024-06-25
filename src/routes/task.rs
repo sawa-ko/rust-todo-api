@@ -6,7 +6,7 @@ use rocket::serde::{Deserialize, Serialize};
 use rocket::{delete, form, get, patch, post, FromForm};
 use sea_orm_rocket::Connection;
 use services::mutations::task::{TaskMutation, TaskPayload};
-use services::queries::task::{PaginationPayload, TaskQueries};
+use services::queries::task::{GetAllTasks, PaginationPayload, TaskQueries};
 use crate::routes::ResponseRequest;
 
 #[derive(Deserialize, Serialize, FromForm)]
@@ -136,7 +136,7 @@ fn validate_min_params<'v>(value: &Option<i32>, field_name: String) -> form::Res
 }
 
 #[get("/?<filter..>")]
-pub async fn get_tasks(filter: FilterTasks, conn: Connection<'_, Db>) -> Json<ResponseRequest<Option<Vec<Task::Model>>>> {
+pub async fn get_tasks(filter: FilterTasks, conn: Connection<'_, Db>) -> Json<ResponseRequest<Option<GetAllTasks>>> {
     let payload = PaginationPayload {
         page: filter.page.unwrap_or(1) as u64,
         size: filter.size.unwrap_or(10) as u64,

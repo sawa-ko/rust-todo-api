@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 database = { path = "../database" }
 sea-orm = { workspace = true }
+serde = { version = "1.0.203", features = ["derive"] }
