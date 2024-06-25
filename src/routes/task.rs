@@ -3,10 +3,10 @@ use rocket::form::{Error, Form};
 use rocket::serde::{Deserialize, Serialize};
 use rocket::serde::json::Json;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{EntityTrait};
+use sea_orm::{ActiveModelTrait, EntityTrait};
 use sea_orm_rocket::Connection;
 use database::Db;
-use database::entities::task as Task;
+use database::entities::{task as Task};
 
 use crate::routes::ResponseRequest;
 
@@ -55,16 +55,47 @@ pub async fn create_task(form: Form<ManageTodo>, conn: Connection<'_, Db>) -> Js
     Json(res)
 }
 
-#[patch("/update/<id>", data = "<todo>")]
-pub fn update_task(todo: Form<ManageTodo>, id: i32) -> Json<ResponseRequest<ManageTodo>> {
-    println!("{}", &id);
-
+#[patch("/update/<id>", data = "<form>")]
+pub async fn update_task(form: Form<ManageTodo>, id: i32, conn: Connection<'_, Db>) -> Json<ResponseRequest<Option<Task::Model>>> {
+    let db = conn.into_inner();
+    let task_query = Task::Entity::find_by_id(id).one(db).await;
+    
+    if task_query.unwrap_or(None).is_none() {
+        let res = ResponseRequest {
+            message: Some("Task not found".to_string()),
+            status: 404,
+            data: None
+        };
+        
+        return Json(res);
+    }
+    
+    let todo = form.into_inner();
+    let task = Task::ActiveModel {
+        id: Set(id.to_owned()),
+        name: Set(todo.name.trim().to_owned()),
+        description: Set(todo.description.trim().to_owned()),
+        is_active: Set(todo.is_complete.to_owned()),
+    };
+    
+    let task_result = task.update(db).await;
+    if task_result.is_err() {
+        let res = ResponseRequest {
+            message: Some("Failed to update task".to_string()),
+            status: 500,
+            data: None
+        };
+        
+        return Json(res);
+    }
+    
+    let updated_task = Task::Entity::find_by_id(id).one(db).await;
     let res = ResponseRequest {
         message: Some("Task updated successfully".to_string()),
         status: 200,
-        data: todo.into_inner()
+        data: updated_task.unwrap()
     };
-
+    
     Json(res)
 }
 
