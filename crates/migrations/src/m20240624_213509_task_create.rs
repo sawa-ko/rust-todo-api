@@ -20,12 +20,12 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         ColumnDef::new(Task::Name)
-                            .char_len(50)
+                            .string()
                             .not_null(),
                     )
                     .col(
                         ColumnDef::new(Task::Description)
-                            .char_len(512)
+                            .string()
                             .not_null(),
                     )
                     .col(
