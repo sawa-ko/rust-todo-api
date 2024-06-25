@@ -8,14 +8,14 @@ impl MigrationTrait for Migration {
     async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         let fk_user = TableForeignKey::new()
             .name("fk_user")
-            .from_tbl(User::Table)
-            .from_col(User::Id)
-            .to_tbl(Task::Table)
-            .to_col(Task::UserId)
+            .from_tbl(Task::Table)
+            .from_col(Task::UserId)
+            .to_tbl(User::Table)
+            .to_col(User::Id)
             .on_delete(ForeignKeyAction::Cascade)
             .on_update(ForeignKeyAction::Cascade)
             .to_owned();
-        
+
         manager
             .alter_table(
                 Table::alter()
@@ -51,5 +51,6 @@ enum User {
 enum Task {
     #[sea_orm(iden = "tasks")]
     Table,
+    #[sea_orm(iden = "user_id")]
     UserId
 }
