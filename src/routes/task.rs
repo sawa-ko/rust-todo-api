@@ -17,6 +17,7 @@ pub struct ManageTodo {
     description: String,
     #[field(default = false)]
     is_active: bool,
+    user_id: i32,
 }
 
 #[post("/create", data = "<form>")]
@@ -31,6 +32,7 @@ pub async fn create_task(
         name: todo.name.trim().to_owned(),
         description: todo.description.trim().to_owned(),
         is_active: todo.is_active,
+        user_id: todo.user_id,
     }, db).await;
     
     if let Err(_) = task {
@@ -65,9 +67,10 @@ pub async fn update_task(
         name: todo.name.trim().to_owned(),
         description: todo.description.trim().to_owned(),
         is_active: todo.is_active,
+        user_id: todo.user_id,
     }, id, db).await;
     
-    if let Err(_) = task {
+    if task.is_err() {
         let res = ResponseRequest {
             message: Some("Failed to update task".to_string()),
             status: 500,
@@ -94,7 +97,7 @@ pub async fn delete_task(
     let db = conn.into_inner();
     let result = TaskMutation::delete(id, db).await;
     
-    if let Err(_) = result {
+    if result.is_err() {
         let res = ResponseRequest {
             message: Some("Failed to delete task".to_string()),
             status: 500,
@@ -146,7 +149,7 @@ pub async fn get_tasks(filter: FilterTasks, conn: Connection<'_, Db>) -> Json<Re
     let db = conn.into_inner();
     let tasks = TaskQueries::get_tasks(payload, db).await;
     
-    if let Err(_) = tasks {
+    if tasks.is_err() {
         let res = ResponseRequest {
             message: Some("Failed to fetch tasks".to_string()),
             status: 500,
@@ -172,7 +175,7 @@ pub async fn get_task(
     let db = conn.into_inner();
     let result = TaskQueries::get_task_by_id(id, db).await;
 
-    if let Err(_) = result {
+    if result.is_err() {
         let res = ResponseRequest {
             message: Some("The task was not found".to_string()),
             status: 404,

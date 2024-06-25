@@ -7,6 +7,7 @@ pub struct TaskPayload {
     pub name: String,
     pub description: String,
     pub is_active: bool,
+    pub user_id: i32,
 }
 
 impl TaskMutation {
@@ -25,6 +26,7 @@ impl TaskMutation {
             name: task_payload.name,
             description: task_payload.description,
             is_active: task_payload.is_active,
+            user_id: task_payload.user_id,
         })
     }
     
@@ -34,6 +36,7 @@ impl TaskMutation {
         task.name = Set(task_payload.name.to_owned());
         task.description = Set(task_payload.description.to_owned());
         task.is_active = Set(task_payload.is_active.to_owned());
+        task.user_id = Set(task_payload.user_id.to_owned());
         
         task.update(db).await
     }
