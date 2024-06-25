@@ -3,6 +3,7 @@ name = "migration"
 version = "0.1.0"
 edition = "2021"
 publish = false
+authors = ["sawa-ko <56084970+sawa-ko@users.noreply.github.com>"]
 
 [lib]
 name = "migration"

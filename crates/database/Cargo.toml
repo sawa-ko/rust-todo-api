@@ -2,10 +2,11 @@
 name = "database"
 version = "0.1.0"
 edition = "2021"
+authors = ["sawa-ko <56084970+sawa-ko@users.noreply.github.com>"]
 
 [dependencies]
 rocket = { workspace = true }
 sea-orm = { workspace = true, features = ["debug-print"] }
 sea-orm-rocket = { workspace = true }
+serde = { workspace = true }
 log = "0.4.21"
-serde = { version = "1.0.203", features = ["derive"] }

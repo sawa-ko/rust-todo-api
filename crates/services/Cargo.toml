@@ -2,8 +2,9 @@
 name = "services"
 version = "0.1.0"
 edition = "2021"
+authors = ["sawa-ko <56084970+sawa-ko@users.noreply.github.com>"]
 
 [dependencies]
 database = { path = "../database" }
 sea-orm = { workspace = true }
-serde = { version = "1.0.203", features = ["derive"] }
+serde = { workspace = true }
