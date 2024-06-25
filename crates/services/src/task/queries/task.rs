@@ -20,7 +20,7 @@ pub struct GetAllTasks {
 
 impl TaskQueries {
     pub async fn get_task_by_id(id: i32, db: &DbConn) -> Result<Model, DbErr> {
-        Entity::find_by_id(id).one(db).await?.ok_or(DbErr::Custom("Task not found.".to_string()))
+        Entity::find_by_id(id).one(db).await?.ok_or(DbErr::RecordNotFound("Task not found.".to_string()))
     }
     
     pub async fn get_tasks(pagination_payload: PaginationPayload, db: &DbConn) -> Result<GetAllTasks, DbErr> {

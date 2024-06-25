@@ -1,9 +1,14 @@
 use rocket::{FromForm, post};
 use rocket::form::Form;
 use rocket::form::validate::msg;
+use rocket::http::Status;
+use rocket::response::status::Custom;
 use rocket::serde::json::Json;
 use rocket::serde::Serialize;
+use sea_orm_rocket::Connection;
 use serde::Deserialize;
+use database::Db;
+use services::user::mutations::user::{SignIn, UserMutations};
 use crate::routes::ResponseRequest;
 
 #[derive(Serialize, Deserialize, FromForm)]
@@ -14,22 +19,22 @@ pub struct SignInPayload {
     pub password: String,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct SignInResponse {
-    pub token: String,
-    pub user_id: i32,
-}
-
 #[post("/sign-in", data = "<payload>")]
-pub async fn sign_in(payload: Form<SignInPayload>) -> Json<ResponseRequest<SignInResponse>> {
-    let result = ResponseRequest {
-        status: 200,
-        message: None,
-        data: SignInResponse {
-            user_id: 1,
-            token: "token".to_string(),
-        }
-    };
+pub async fn sign_in(payload: Form<SignInPayload>, conn: Connection<'_, Db>) -> Custom<Json<ResponseRequest<Option<SignIn>>>> {
+    let db = conn.into_inner();
+    let payload = payload.into_inner();
+    let sign_in_result = UserMutations::sign_in(payload.username, payload.password, db).await;
     
-    Json(result)
+    match sign_in_result { 
+        Ok(sign_in) => Custom(Status::Ok, Json(ResponseRequest {
+            status: 200,
+            message: Some("Sign in successful".to_string()),
+            data: Some(sign_in),
+        })),
+        Err(e) => Custom(Status::Unauthorized, Json(ResponseRequest {
+            status: 401,
+            message: Some(e.to_string()),
+            data: None,
+        }))
+    }
 }
