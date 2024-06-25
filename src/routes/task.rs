@@ -4,10 +4,9 @@ use rocket::form::{Error, Form};
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
 use rocket::{delete, form, get, patch, post, FromForm};
-use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelTrait, EntityTrait};
 use sea_orm_rocket::Connection;
-
+use services::mutations::task::{TaskMutation, TaskPayload};
+use services::queries::task::{PaginationPayload, TaskQueries};
 use crate::routes::ResponseRequest;
 
 #[derive(Deserialize, Serialize, FromForm)]
@@ -17,7 +16,7 @@ pub struct ManageTodo {
     #[field(validate = len(5..=200).or_else(msg!("The description must be at least 5 characters long.")))]
     description: String,
     #[field(default = false)]
-    is_complete: bool,
+    is_active: bool,
 }
 
 #[post("/create", data = "<form>")]
@@ -28,16 +27,13 @@ pub async fn create_task(
     let db = conn.into_inner();
     let todo = form.into_inner();
 
-    let task = Task::ActiveModel {
-        id: Default::default(),
-        name: Set(todo.name.trim().to_owned()),
-        description: Set(todo.description.trim().to_owned()),
-        is_active: Set(todo.is_complete.to_owned()),
-    };
-
-    let task_result = Task::Entity::insert(task).exec(db).await;
-
-    if task_result.is_err() {
+    let task = TaskMutation::create(TaskPayload {
+        name: todo.name.trim().to_owned(),
+        description: todo.description.trim().to_owned(),
+        is_active: todo.is_active,
+    }, db).await;
+    
+    if let Err(_) = task {
         let res = ResponseRequest {
             message: Some("Failed to create task".to_string()),
             status: 500,
@@ -46,17 +42,13 @@ pub async fn create_task(
 
         return Json(res);
     }
-
-    let new_task = Task::Entity::find_by_id(task_result.unwrap().last_insert_id)
-        .one(db)
-        .await;
-
+    
     let res = ResponseRequest {
         message: Some("Task created successfully".to_string()),
         status: 200,
-        data: new_task.unwrap(),
+        data: Some(task.unwrap()),
     };
-
+    
     Json(res)
 }
 
@@ -67,28 +59,15 @@ pub async fn update_task(
     conn: Connection<'_, Db>,
 ) -> Json<ResponseRequest<Option<Task::Model>>> {
     let db = conn.into_inner();
-    let task_query = Task::Entity::find_by_id(id).one(db).await;
-
-    if task_query.unwrap_or(None).is_none() {
-        let res = ResponseRequest {
-            message: Some("Task not found".to_string()),
-            status: 404,
-            data: None,
-        };
-
-        return Json(res);
-    }
-
     let todo = form.into_inner();
-    let task = Task::ActiveModel {
-        id: Set(id.to_owned()),
-        name: Set(todo.name.trim().to_owned()),
-        description: Set(todo.description.trim().to_owned()),
-        is_active: Set(todo.is_complete.to_owned()),
-    };
-
-    let task_result = task.update(db).await;
-    if task_result.is_err() {
+    
+    let task = TaskMutation::update(TaskPayload {
+        name: todo.name.trim().to_owned(),
+        description: todo.description.trim().to_owned(),
+        is_active: todo.is_active,
+    }, id, db).await;
+    
+    if let Err(_) = task {
         let res = ResponseRequest {
             message: Some("Failed to update task".to_string()),
             status: 500,
@@ -97,14 +76,13 @@ pub async fn update_task(
 
         return Json(res);
     }
-
-    let updated_task = Task::Entity::find_by_id(id).one(db).await;
+    
     let res = ResponseRequest {
         message: Some("Task updated successfully".to_string()),
         status: 200,
-        data: updated_task.unwrap(),
+        data: Some(task.unwrap()),
     };
-
+    
     Json(res)
 }
 
@@ -114,24 +92,24 @@ pub async fn delete_task(
     conn: Connection<'_, Db>,
 ) -> Json<ResponseRequest<Option<Task::Model>>> {
     let db = conn.into_inner();
-    let task_query = Task::Entity::find_by_id(id).one(db).await;
-
-    if task_query.unwrap_or(None).is_none() {
+    let result = TaskMutation::delete(id, db).await;
+    
+    if let Err(_) = result {
         let res = ResponseRequest {
-            message: Some("Task not found".to_string()),
-            status: 404,
+            message: Some("Failed to delete task".to_string()),
+            status: 500,
             data: None,
         };
 
         return Json(res);
     }
-
+    
     let res = ResponseRequest {
         message: Some("Task deleted successfully".to_string()),
         status: 200,
-        data: id,
+        data: None,
     };
-
+    
     Json(res)
 }
 
@@ -158,11 +136,30 @@ fn validate_min_params<'v>(value: &Option<i32>, field_name: String) -> form::Res
 }
 
 #[get("/?<filter..>")]
-pub fn get_tasks(filter: FilterTasks) -> Json<ResponseRequest<FilterTasks>> {
+pub async fn get_tasks(filter: FilterTasks, conn: Connection<'_, Db>) -> Json<ResponseRequest<Option<Vec<Task::Model>>>> {
+    let payload = PaginationPayload {
+        page: filter.page.unwrap_or(1) as u64,
+        size: filter.size.unwrap_or(10) as u64,
+        query: filter.query.clone(),
+    };
+
+    let db = conn.into_inner();
+    let tasks = TaskQueries::get_tasks(payload, db).await;
+    
+    if let Err(_) = tasks {
+        let res = ResponseRequest {
+            message: Some("Failed to fetch tasks".to_string()),
+            status: 500,
+            data: None,
+        };
+
+        return Json(res);
+    }
+    
     let res = ResponseRequest {
         message: None,
         status: 200,
-        data: filter,
+        data: Some(tasks.unwrap()),
     };
 
     Json(res)

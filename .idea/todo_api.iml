@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/crates/migrations/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/prisma/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/services/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/crates/database/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
