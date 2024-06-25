@@ -139,7 +139,7 @@ fn validate_min_params<'v>(value: &Option<i32>, field_name: String) -> form::Res
 }
 
 #[get("/?<filter..>")]
-pub async fn get_tasks(filter: FilterTasks, conn: Connection<'_, Db>) -> Json<ResponseRequest<Option<GetAllTasks>>> {
+pub async fn get_tasks(filter: FilterTasks, conn: Connection<'_, Db>) -> Custom<Json<ResponseRequest<Option<GetAllTasks>>>> {
     let payload = PaginationPayload {
         page: filter.page.unwrap_or(1) as u64,
         size: filter.size.unwrap_or(10) as u64,
@@ -148,48 +148,46 @@ pub async fn get_tasks(filter: FilterTasks, conn: Connection<'_, Db>) -> Json<Re
 
     let db = conn.into_inner();
     let tasks = TaskQueries::get_tasks(payload, db).await;
-    
-    if tasks.is_err() {
-        let res = ResponseRequest {
-            message: Some("Failed to fetch tasks".to_string()),
-            status: 500,
-            data: None,
-        };
 
-        return Json(res);
+    match tasks {
+        Ok(tasks_result) => {
+            Custom(Status::Ok, Json(ResponseRequest {
+                message: None,
+                status: 200,
+                data: Some(tasks_result),
+            }))
+        }
+        Err(_) => {
+            Custom(Status::InternalServerError, Json(ResponseRequest {
+                message: Some("Failed to fetch tasks".to_string()),
+                status: 500,
+                data: None,
+            }))
+        }
     }
-    
-    let res = ResponseRequest {
-        message: None,
-        status: 200,
-        data: Some(tasks.unwrap()),
-    };
-
-    Json(res)
 }
 #[get("/<id>")]
 pub async fn get_task(
     id: i32,
     conn: Connection<'_, Db>,
-) -> Json<ResponseRequest<Option<Task::Model>>> {
+) -> Custom<Json<ResponseRequest<Option<Task::Model>>>> {
     let db = conn.into_inner();
     let result = TaskQueries::get_task_by_id(id, db).await;
 
-    if result.is_err() {
-        let res = ResponseRequest {
-            message: Some("The task was not found".to_string()),
-            status: 404,
-            data: None,
-        };
-
-        return Json(res);
+    match result {
+        Ok(task) => {
+            Custom(Status::Ok, Json(ResponseRequest {
+                message: None,
+                status: 200,
+                data: Some(task),
+            }))
+        }
+        Err(_) => {
+            Custom(Status::NotFound, Json(ResponseRequest {
+                message: Some("The task was not found".to_string()),
+                status: 404,
+                data: None,
+            }))
+        }
     }
-
-    let res = ResponseRequest {
-        message: None,
-        status: 200,
-        data: Some(result.unwrap()),
-    };
-
-    Json(res)
 }
