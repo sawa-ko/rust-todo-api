@@ -8,6 +8,7 @@ pub struct PaginationPayload {
     pub page: u64,
     pub size: u64,
     pub query: Option<String>,
+    pub user_id: i32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -19,8 +20,8 @@ pub struct GetAllTasks {
 }
 
 impl TaskQueries {
-    pub async fn get_task_by_id(id: i32, db: &DbConn) -> Result<Model, DbErr> {
-        Entity::find_by_id(id).one(db).await?.ok_or(DbErr::RecordNotFound("Task not found.".to_string()))
+    pub async fn get_task_by_id(id: i32, user_id: i32, db: &DbConn) -> Result<Model, DbErr> {
+        Entity::find_by_id(id).filter(Column::UserId.eq(user_id)).one(db).await?.ok_or(DbErr::RecordNotFound("Task not found.".to_string()))
     }
     
     pub async fn get_tasks(pagination_payload: PaginationPayload, db: &DbConn) -> Result<GetAllTasks, DbErr> {
@@ -30,6 +31,7 @@ impl TaskQueries {
         
         let paginator = Entity::find()
             .filter(Column::Name.contains(query))
+            .filter(Column::UserId.eq(pagination_payload.user_id))
             .paginate(db, pagination_payload.size);
 
         let num_pages = paginator.num_pages().await?;

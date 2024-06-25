@@ -7,6 +7,7 @@ use rocket::{delete, form, get, patch, post, FromForm};
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use sea_orm_rocket::Connection;
+use services::auth::jwt::{JWT};
 use services::task::mutations::task::{TaskMutation, TaskPayload};
 use services::task::queries::task::{GetAllTasks, PaginationPayload, TaskQueries};
 use crate::routes::ResponseRequest;
@@ -18,13 +19,13 @@ pub struct ManageTodo {
     #[field(validate = len(5..=200).or_else(msg!("The description must be at least 5 characters long.")))]
     description: String,
     #[field(default = false)]
-    is_active: bool,
-    user_id: i32,
+    is_active: bool
 }
 
 #[post("/create", data = "<form>")]
 pub async fn create_task(
     form: Form<ManageTodo>,
+    user: JWT,
     conn: Connection<'_, Db>,
 ) -> Custom<Json<ResponseRequest<Option<Task::Model>>>> {
     let db = conn.into_inner();
@@ -34,7 +35,7 @@ pub async fn create_task(
         name: todo.name.trim().to_owned(),
         description: todo.description.trim().to_owned(),
         is_active: todo.is_active,
-        user_id: todo.user_id,
+        user_id: user.claims.sub,
     }, db).await;
 
     match task {
@@ -58,6 +59,7 @@ pub async fn create_task(
 #[patch("/update/<id>", data = "<form>")]
 pub async fn update_task(
     form: Form<ManageTodo>,
+    user: JWT,
     id: i32,
     conn: Connection<'_, Db>,
 ) -> Custom<Json<ResponseRequest<Option<Task::Model>>>> {
@@ -68,7 +70,7 @@ pub async fn update_task(
         name: todo.name.trim().to_owned(),
         description: todo.description.trim().to_owned(),
         is_active: todo.is_active,
-        user_id: todo.user_id,
+        user_id: user.claims.sub,
     }, id, db).await;
 
     match task {
@@ -92,10 +94,11 @@ pub async fn update_task(
 #[delete("/delete/<id>")]
 pub async fn delete_task(
     id: i32,
+    user: JWT,
     conn: Connection<'_, Db>,
 ) -> Custom<Json<ResponseRequest<u64>>> {
     let db = conn.into_inner();
-    let result = TaskMutation::delete(id, db).await;
+    let result = TaskMutation::delete(id, user.claims.sub, db).await;
 
     match result {
         Ok(deleted_task) => {
@@ -138,11 +141,12 @@ fn validate_min_params<'v>(value: &Option<i32>, field_name: String) -> form::Res
 }
 
 #[get("/?<filter..>")]
-pub async fn get_tasks(filter: FilterTasks, conn: Connection<'_, Db>) -> Custom<Json<ResponseRequest<Option<GetAllTasks>>>> {
+pub async fn get_tasks(filter: FilterTasks, user: JWT, conn: Connection<'_, Db>) -> Custom<Json<ResponseRequest<Option<GetAllTasks>>>> {
     let payload = PaginationPayload {
         page: filter.page.unwrap_or(1) as u64,
         size: filter.size.unwrap_or(10) as u64,
         query: filter.query.clone(),
+        user_id: user.claims.sub,
     };
 
     let db = conn.into_inner();
@@ -168,10 +172,11 @@ pub async fn get_tasks(filter: FilterTasks, conn: Connection<'_, Db>) -> Custom<
 #[get("/<id>")]
 pub async fn get_task(
     id: i32,
+    user: JWT,
     conn: Connection<'_, Db>,
 ) -> Custom<Json<ResponseRequest<Option<Task::Model>>>> {
     let db = conn.into_inner();
-    let result = TaskQueries::get_task_by_id(id, db).await;
+    let result = TaskQueries::get_task_by_id(id, user.claims.sub, db).await;
 
     match result {
         Ok(task) => {

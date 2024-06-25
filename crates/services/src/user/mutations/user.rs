@@ -16,16 +16,16 @@ pub struct SignIn {
 }
 
 impl UserMutations {
-    pub async fn create(username: &String, password: &String, db: &DbConn) -> Result<Model, DbErr> {
+    pub async fn create(username: String, password: String, db: &DbConn) -> Result<Model, DbErr> {
         let user_exist = Entity::find().filter(
-            Column::Username.contains(username)
+            Column::Username.contains(&username)
         ).one(db).await?;
         
         if user_exist.is_some() {
             return Err(DbErr::Custom(format!("Already exist an user with the username {}.", username)))
         }
         
-        let hashed_password = bcrypt::hash(password, DEFAULT_COST).unwrap();
+        let hashed_password = bcrypt::hash(&password, DEFAULT_COST).unwrap();
         let user = ActiveModel {
             username: Set(username.to_owned()),
             password: Set(hashed_password),

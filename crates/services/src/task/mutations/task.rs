@@ -16,6 +16,7 @@ impl TaskMutation {
             name: Set(task_payload.name.to_owned()),
             description: Set(task_payload.description.to_owned()),
             is_active: Set(task_payload.is_active.to_owned()),
+            user_id: Set(task_payload.user_id),
             ..Default::default()
         };
 
@@ -33,16 +34,24 @@ impl TaskMutation {
     pub async fn update(task_payload: TaskPayload, id: i32, db: &DbConn) -> Result<Model, DbErr> {
         let mut task: ActiveModel = Entity::find_by_id(id).one(db).await?.ok_or(DbErr::RecordNotFound(String::from("Task not found."))).map(Into::into)?;
         
+        if task.user_id.clone().unwrap() != task_payload.user_id {
+            return Err(DbErr::RecordNotFound(String::from("Task not found.")));
+        }
+        
         task.name = Set(task_payload.name.to_owned());
         task.description = Set(task_payload.description.to_owned());
         task.is_active = Set(task_payload.is_active.to_owned());
-        task.user_id = Set(task_payload.user_id.to_owned());
         
         task.update(db).await
     }
     
-    pub async fn delete(id: i32, db: &DbConn) -> Result<DeleteResult, DbErr> {
+    pub async fn delete(id: i32, user_id: i32, db: &DbConn) -> Result<DeleteResult, DbErr> {
         let task: ActiveModel = Entity::find_by_id(id).one(db).await?.ok_or(DbErr::RecordNotFound(String::from("Task not found."))).map(Into::into)?;
+
+        if task.user_id.clone().unwrap() != user_id {
+            return Err(DbErr::RecordNotFound(String::from("Task not found.")));
+        }
+        
         task.delete(db).await
     }
     

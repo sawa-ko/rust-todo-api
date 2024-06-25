@@ -3018,6 +3018,7 @@ dependencies = [
  "database",
  "dotenvy",
  "jsonwebtoken",
+ "rocket",
  "sea-orm",
  "serde",
  "serde_json",
