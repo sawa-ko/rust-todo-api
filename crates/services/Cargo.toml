@@ -1,0 +1,8 @@
+[package]
+name = "services"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+database = { path = "../database" }
+sea-orm = { workspace = true }

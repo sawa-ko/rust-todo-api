@@ -1,9 +1,9 @@
 pub mod entities;
 
-use std::time::Duration;
 use rocket::figment::Figment;
 use sea_orm::ConnectOptions;
 use sea_orm_rocket::{Config, Database};
+use std::time::Duration;
 
 #[derive(Debug, Clone)]
 pub struct SeaOrmPool {
@@ -36,7 +36,7 @@ impl sea_orm_rocket::Pool for SeaOrmPool {
         }
 
         let conn = sea_orm::Database::connect(options).await?;
-        Ok(SeaOrmPool{ conn })
+        Ok(SeaOrmPool { conn })
     }
 
     fn borrow(&self) -> &Self::Connection {
