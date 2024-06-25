@@ -1,7 +1,5 @@
 use sea_orm_migration::prelude::*;
 
-use database::entities::task as TaskEntity;
-
 #[derive(DeriveMigrationName)]
 pub struct Migration;
 
@@ -11,27 +9,27 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(TaskEntity::Entity)
+                    .table(Task::Table)
                     .if_not_exists()
                     .col(
-                        ColumnDef::new(TaskEntity::Column::Id)
+                        ColumnDef::new(Task::Id)
                             .integer()
                             .not_null()
                             .auto_increment()
                             .primary_key(),
                     )
                     .col(
-                        ColumnDef::new(TaskEntity::Column::Name)
+                        ColumnDef::new(Task::Name)
                             .char_len(50)
                             .not_null(),
                     )
                     .col(
-                        ColumnDef::new(TaskEntity::Column::Description)
+                        ColumnDef::new(Task::Description)
                             .char_len(512)
                             .not_null(),
                     )
                     .col(
-                        ColumnDef::new(TaskEntity::Column::IsActive)
+                        ColumnDef::new(Task::IsActive)
                             .boolean()
                             .default(false)
                             .not_null(),
@@ -43,7 +41,17 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(TaskEntity::Entity).to_owned())
+            .drop_table(Table::drop().table(Task::Table).to_owned())
             .await
     }
+}
+
+#[derive(DeriveIden)]
+enum Task {
+    #[sea_orm(iden = "tasks")]
+    Table,
+    Id,
+    Name,
+    Description,
+    IsActive,
 }
