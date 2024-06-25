@@ -4,6 +4,9 @@ use rocket::form::{Error, Form};
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
 use rocket::{delete, form, get, patch, post, FromForm};
+use rocket::http::Status;
+use rocket::response::Responder;
+use rocket::response::status::Custom;
 use sea_orm_rocket::Connection;
 use services::task::mutations::task::{TaskMutation, TaskPayload};
 use services::task::queries::task::{GetAllTasks, PaginationPayload, TaskQueries};
@@ -24,7 +27,7 @@ pub struct ManageTodo {
 pub async fn create_task(
     form: Form<ManageTodo>,
     conn: Connection<'_, Db>,
-) -> Json<ResponseRequest<Option<Task::Model>>> {
+) -> Custom<Json<ResponseRequest<Option<Task::Model>>>> {
     let db = conn.into_inner();
     let todo = form.into_inner();
 
@@ -34,24 +37,23 @@ pub async fn create_task(
         is_active: todo.is_active,
         user_id: todo.user_id,
     }, db).await;
-    
-    if let Err(_) = task {
-        let res = ResponseRequest {
-            message: Some("Failed to create task".to_string()),
-            status: 500,
-            data: None,
-        };
 
-        return Json(res);
+    match task {
+        Ok(created_task) => {
+            Custom(Status::Ok, Json(ResponseRequest {
+                message: Some("Task created successfully".to_string()),
+                status: 200,
+                data: Some(created_task),
+            }))
+        },
+        Err(_) => {
+            Custom(Status::InternalServerError, Json(ResponseRequest {
+                message: Some("Failed to create task".to_string()),
+                status: 500,
+                data: None,
+            }))
+        }
     }
-    
-    let res = ResponseRequest {
-        message: Some("Task created successfully".to_string()),
-        status: 200,
-        data: Some(task.unwrap()),
-    };
-    
-    Json(res)
 }
 
 #[patch("/update/<id>", data = "<form>")]
@@ -59,7 +61,7 @@ pub async fn update_task(
     form: Form<ManageTodo>,
     id: i32,
     conn: Connection<'_, Db>,
-) -> Json<ResponseRequest<Option<Task::Model>>> {
+) -> Custom<Json<ResponseRequest<Option<Task::Model>>>> {
     let db = conn.into_inner();
     let todo = form.into_inner();
     
@@ -69,51 +71,49 @@ pub async fn update_task(
         is_active: todo.is_active,
         user_id: todo.user_id,
     }, id, db).await;
-    
-    if task.is_err() {
-        let res = ResponseRequest {
-            message: Some("Failed to update task".to_string()),
-            status: 500,
-            data: None,
-        };
 
-        return Json(res);
+    match task {
+        Ok(updated_task) => {
+            Custom(Status::Ok, Json(ResponseRequest {
+                message: Some("Task created successfully".to_string()),
+                status: 200,
+                data: Some(updated_task),
+            }))
+        }
+        Err(_) => {
+            Custom(Status::InternalServerError, Json(ResponseRequest {
+                message: Some("Failed to update task".to_string()),
+                status: 500,
+                data: None,
+            }))
+        }
     }
-    
-    let res = ResponseRequest {
-        message: Some("Task updated successfully".to_string()),
-        status: 200,
-        data: Some(task.unwrap()),
-    };
-    
-    Json(res)
 }
 
 #[delete("/delete/<id>")]
 pub async fn delete_task(
     id: i32,
     conn: Connection<'_, Db>,
-) -> Json<ResponseRequest<Option<Task::Model>>> {
+) -> Custom<Json<ResponseRequest<u64>>> {
     let db = conn.into_inner();
     let result = TaskMutation::delete(id, db).await;
-    
-    if result.is_err() {
-        let res = ResponseRequest {
-            message: Some("Failed to delete task".to_string()),
-            status: 500,
-            data: None,
-        };
 
-        return Json(res);
+    match result {
+        Ok(deleted_task) => {
+            Custom(Status::Ok, Json(ResponseRequest {
+                message: Some("Task created successfully".to_string()),
+                status: 200,
+                data: deleted_task.rows_affected,
+            }))
+        }
+        Err(_) => {
+            Custom(Status::InternalServerError, Json(ResponseRequest {
+                message: Some("Failed to delete the task".to_string()),
+                status: 500,
+                data: 0,
+            }))
+        }
     }
-    
-    let res = ResponseRequest {
-        message: Some("Task deleted successfully".to_string()),
-        status: 200,
-        data: None,
-    };
-    
-    Json(res)
 }
 
 #[derive(FromForm, Serialize)]
