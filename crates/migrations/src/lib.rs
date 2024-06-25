@@ -2,6 +2,7 @@ pub use sea_orm_migration::prelude::*;
 
 mod m20240624_213509_task_create;
 mod m20240625_184538_user_create;
+mod m20240625_193356_user_task_relations;
 
 pub struct Migrator;
 
@@ -11,6 +12,7 @@ impl MigratorTrait for Migrator {
         vec![
             Box::new(m20240624_213509_task_create::Migration),
             Box::new(m20240625_184538_user_create::Migration),
+            Box::new(m20240625_193356_user_task_relations::Migration),
         ]
     }
 }
