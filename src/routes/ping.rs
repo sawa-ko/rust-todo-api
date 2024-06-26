@@ -16,7 +16,7 @@ pub struct PingApi {
     memory_usage_mb: String,
 }
 
-#[get("/ping")]
+#[get("/")]
 pub async fn ping_route(conn: Connection<'_, Db>) -> Json<ResponseRequest<PingApi>> {
     let db = conn.into_inner();
     let db_ping = db.ping().await;
