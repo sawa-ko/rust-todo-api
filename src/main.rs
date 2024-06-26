@@ -37,7 +37,9 @@ async fn start_api() -> Result<(), rocket::Error> {
 }
 
 fn main() {
-    dotenvy::dotenv().expect("Error loading .env file!");
+    if dotenvy::dotenv().is_err() {
+        println!("Error loading .env file!");
+    }
 
     let result = start_api();
 

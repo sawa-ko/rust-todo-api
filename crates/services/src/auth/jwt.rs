@@ -20,7 +20,10 @@ pub struct JWT {
 
 impl JWT {
     pub fn encode(id: &i32) -> Result<String, Error> {
-        dotenvy::dotenv().expect("Error loading .env file!");
+        if dotenvy::dotenv().is_err() {
+            println!("Error loading .env file!");
+        }
+        
         let secret = env::var("JWT_SECRET")
             .expect("Error creating auth token: JWT_SECRET environment variable is missing");
         let exp = SystemTime::now().add(Duration::from_secs(3600));
@@ -41,7 +44,10 @@ impl JWT {
     }
 
     pub fn decode(token_data: String) -> Result<TokenData<Claims>, ErrorKind> {
-        dotenvy::dotenv().expect("Error loading .env file!");
+        if dotenvy::dotenv().is_err() {
+            println!("Error loading .env file!");
+        }
+        
         let secret = env::var("JWT_SECRET");
         let token = token_data.trim_start_matches("Bearer").trim();
 
