@@ -1,7 +1,6 @@
 mod routes;
 
 use database::Db;
-use migration::MigratorTrait;
 use rocket::{routes};
 use sea_orm_rocket::Database;
 use std::env;
