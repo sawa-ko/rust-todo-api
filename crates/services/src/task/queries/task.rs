@@ -1,6 +1,8 @@
-use database::entities::task::{Column, Entity, Model, Relation};
+use rocket::futures::FutureExt;
+use database::entities::task::{Column, Entity, Model};
 use sea_orm::*;
 use serde::{Deserialize, Serialize};
+use crate::task::models::task::TaskModel;
 
 pub struct TaskQueries;
 
@@ -13,36 +15,23 @@ pub struct PaginationPayload {
 
 #[derive(Serialize, Deserialize)]
 pub struct GetAllTasks {
-    items: Vec<Model>,
+    items: Vec<TaskModel>,
     num_pages: u64,
     size: u64,
     page: u64,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct GetTask {
-    pub task: Model,
-    pub user: Option<database::entities::user::Model>,
-}
-
 impl TaskQueries {
-    pub async fn get_task_by_id(id: i32, user_id: i32, db: &DbConn) -> Result<GetTask, DbErr> {
-        let task = Entity::find_by_id(id)
+    pub async fn get_task_by_id(id: i32, user_id: i32, db: &DbConn) -> Result<TaskModel, DbErr> {
+        let task: TaskModel = Entity::find_by_id(id)
+            .find_also_related(database::entities::user::Entity)
             .filter(Column::UserId.eq(user_id))
             .one(db)
             .await?
-            .ok_or(DbErr::RecordNotFound("Task not found.".to_string()))?;
+            .ok_or(DbErr::RecordNotFound("Task not found.".to_string()))?
+            .into();
 
-        let user = task
-            .find_related(database::entities::user::Entity)
-            .columns([
-                database::entities::user::Column::Id,
-                database::entities::user::Column::Username,
-            ])
-            .one(db)
-            .await?;
-
-        Ok(GetTask { task, user })
+        Ok(task)
     }
 
     pub async fn get_tasks(
@@ -54,17 +43,19 @@ impl TaskQueries {
         let size = pagination_payload.size;
 
         let paginator = Entity::find()
+            .find_also_related(database::entities::user::Entity)
             .filter(Column::Name.contains(query))
             .filter(Column::UserId.eq(pagination_payload.user_id))
             .paginate(db, pagination_payload.size);
 
         let num_pages = paginator.num_pages().await?;
+        let items: Vec<TaskModel> = paginator.fetch_page(page - 1).await?.into_iter().map(TaskModel::from).collect();
 
         Ok(GetAllTasks {
             num_pages,
             size,
             page,
-            items: paginator.fetch_page(page - 1).await?,
+            items,
         })
     }
 }
