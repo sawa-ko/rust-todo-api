@@ -17,7 +17,7 @@ impl From<(Model, Option<UserEntity::Model>)> for TaskModel {
     fn from(value: (Model, Option<UserEntity::Model>)) -> Self {
         let (task_entity, user_entity) = value;
 
-        TaskModel {
+        Self {
             id: task_entity.id,
             name: task_entity.name,
             description: task_entity.description,
