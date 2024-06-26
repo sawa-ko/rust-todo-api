@@ -1,5 +1,5 @@
 use database::entities::user::Model;
-use rocket::serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct UserModel {

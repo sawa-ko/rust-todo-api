@@ -21,6 +21,7 @@ migration = { path = "./crates/migrations" }
 services  = { path = "./crates/services" }
 dotenvy = "0.15.7"
 memory-stats = "1.1.0"
+jsonwebtoken = "9.3.0"
 
 [workspace]
 members = [

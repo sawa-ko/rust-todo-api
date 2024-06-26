@@ -1,16 +1,15 @@
 use memory_stats::memory_stats;
 use rocket::get;
 use rocket::serde::json::Json;
-use rocket::serde::Serialize;
+use rocket::serde::{Serialize, Deserialize};
 use sea_orm::EntityTrait;
 use sea_orm_rocket::Connection;
-
 use database::entities::task::Entity as TaskEntity;
 use database::Db;
 
 use crate::routes::ResponseRequest;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct PingApi {
     db_status: bool,
     tasks_total: usize,
