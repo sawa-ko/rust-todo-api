@@ -3,7 +3,6 @@ authors = ["sawa-ko <56084970+sawa-ko@users.noreply.github.com>"]
 name = "todo_api"
 version = "0.1.0"
 edition = "2021"
-default-run = "todo_api"
 
 [package.metadata.scripts]
 migrations-init = "sea-orm-cli migrate init -d ./crates/migrations"

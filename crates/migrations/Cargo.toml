@@ -5,10 +5,6 @@ edition = "2021"
 publish = false
 authors = ["sawa-ko <56084970+sawa-ko@users.noreply.github.com>"]
 
-[lib]
-name = "migration"
-path = "src/lib.rs"
-
 [dependencies]
 async-std = { version = "1", features = ["attributes", "tokio1"] }
 database = { path = "../database" }
