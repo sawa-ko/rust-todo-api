@@ -15,7 +15,7 @@ pub struct Model {
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
     #[sea_orm(has_many = "super::task::Entity")]
-    Tasks
+    Tasks,
 }
 
 impl Related<super::task::Entity> for Entity {

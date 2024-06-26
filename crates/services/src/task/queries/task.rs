@@ -1,8 +1,7 @@
-use rocket::futures::FutureExt;
-use database::entities::task::{Column, Entity, Model};
+use crate::task::models::task::TaskModel;
+use database::entities::task::{Column, Entity};
 use sea_orm::*;
 use serde::{Deserialize, Serialize};
-use crate::task::models::task::TaskModel;
 
 pub struct TaskQueries;
 
@@ -49,7 +48,12 @@ impl TaskQueries {
             .paginate(db, pagination_payload.size);
 
         let num_pages = paginator.num_pages().await?;
-        let items: Vec<TaskModel> = paginator.fetch_page(page - 1).await?.into_iter().map(TaskModel::from).collect();
+        let items: Vec<TaskModel> = paginator
+            .fetch_page(page - 1)
+            .await?
+            .into_iter()
+            .map(TaskModel::from)
+            .collect();
 
         Ok(GetAllTasks {
             num_pages,

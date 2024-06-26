@@ -1,17 +1,17 @@
+use crate::routes::ResponseRequest;
 use database::entities::task as Task;
 use database::Db;
 use rocket::form::{Error, Form};
+use rocket::http::Status;
+use rocket::response::status::Custom;
 use rocket::serde::json::Json;
 use rocket::serde::{Deserialize, Serialize};
 use rocket::{delete, form, get, patch, post, FromForm};
-use rocket::http::Status;
-use rocket::response::status::Custom;
 use sea_orm_rocket::Connection;
-use services::auth::jwt::{JWT};
+use services::auth::jwt::JWT;
 use services::task::models::task::TaskModel;
 use services::task::mutations::task::{TaskMutation, TaskPayload};
 use services::task::queries::task::{GetAllTasks, PaginationPayload, TaskQueries};
-use crate::routes::ResponseRequest;
 
 #[derive(Deserialize, Serialize, FromForm)]
 pub struct ManageTodo {
@@ -20,7 +20,7 @@ pub struct ManageTodo {
     #[field(validate = len(5..=200).or_else(msg!("The description must be at least 5 characters long.")))]
     description: String,
     #[field(default = false)]
-    is_active: bool
+    is_active: bool,
 }
 
 #[post("/create", data = "<form>")]
@@ -32,28 +32,34 @@ pub async fn create_task(
     let db = conn.into_inner();
     let todo = form.into_inner();
 
-    let task = TaskMutation::create(TaskPayload {
-        name: todo.name.trim().to_owned(),
-        description: todo.description.trim().to_owned(),
-        is_active: todo.is_active,
-        user_id: user.claims.sub,
-    }, db).await;
+    let task = TaskMutation::create(
+        TaskPayload {
+            name: todo.name.trim().to_owned(),
+            description: todo.description.trim().to_owned(),
+            is_active: todo.is_active,
+            user_id: user.claims.sub,
+        },
+        db,
+    )
+    .await;
 
     match task {
-        Ok(created_task) => {
-            Custom(Status::Ok, Json(ResponseRequest {
+        Ok(created_task) => Custom(
+            Status::Ok,
+            Json(ResponseRequest {
                 message: Some("Task created successfully".to_string()),
                 status: 200,
                 data: Some(created_task),
-            }))
-        },
-        Err(_) => {
-            Custom(Status::InternalServerError, Json(ResponseRequest {
+            }),
+        ),
+        Err(_) => Custom(
+            Status::InternalServerError,
+            Json(ResponseRequest {
                 message: Some("Failed to create task".to_string()),
                 status: 500,
                 data: None,
-            }))
-        }
+            }),
+        ),
     }
 }
 
@@ -66,29 +72,36 @@ pub async fn update_task(
 ) -> Custom<Json<ResponseRequest<Option<Task::Model>>>> {
     let db = conn.into_inner();
     let todo = form.into_inner();
-    
-    let task = TaskMutation::update(TaskPayload {
-        name: todo.name.trim().to_owned(),
-        description: todo.description.trim().to_owned(),
-        is_active: todo.is_active,
-        user_id: user.claims.sub,
-    }, id, db).await;
+
+    let task = TaskMutation::update(
+        TaskPayload {
+            name: todo.name.trim().to_owned(),
+            description: todo.description.trim().to_owned(),
+            is_active: todo.is_active,
+            user_id: user.claims.sub,
+        },
+        id,
+        db,
+    )
+    .await;
 
     match task {
-        Ok(updated_task) => {
-            Custom(Status::Ok, Json(ResponseRequest {
+        Ok(updated_task) => Custom(
+            Status::Ok,
+            Json(ResponseRequest {
                 message: Some("Task created successfully".to_string()),
                 status: 200,
                 data: Some(updated_task),
-            }))
-        }
-        Err(_) => {
-            Custom(Status::InternalServerError, Json(ResponseRequest {
+            }),
+        ),
+        Err(_) => Custom(
+            Status::InternalServerError,
+            Json(ResponseRequest {
                 message: Some("Failed to update task".to_string()),
                 status: 500,
                 data: None,
-            }))
-        }
+            }),
+        ),
     }
 }
 
@@ -102,20 +115,22 @@ pub async fn delete_task(
     let result = TaskMutation::delete(id, user.claims.sub, db).await;
 
     match result {
-        Ok(deleted_task) => {
-            Custom(Status::Ok, Json(ResponseRequest {
+        Ok(deleted_task) => Custom(
+            Status::Ok,
+            Json(ResponseRequest {
                 message: Some("Task created successfully".to_string()),
                 status: 200,
                 data: deleted_task.rows_affected,
-            }))
-        }
-        Err(_) => {
-            Custom(Status::InternalServerError, Json(ResponseRequest {
+            }),
+        ),
+        Err(_) => Custom(
+            Status::InternalServerError,
+            Json(ResponseRequest {
                 message: Some("Failed to delete the task".to_string()),
                 status: 500,
                 data: 0,
-            }))
-        }
+            }),
+        ),
     }
 }
 
@@ -142,7 +157,11 @@ fn validate_min_params<'v>(value: &Option<i32>, field_name: String) -> form::Res
 }
 
 #[get("/?<filter..>")]
-pub async fn get_tasks(filter: FilterTasks, user: JWT, conn: Connection<'_, Db>) -> Custom<Json<ResponseRequest<Option<GetAllTasks>>>> {
+pub async fn get_tasks(
+    filter: FilterTasks,
+    user: JWT,
+    conn: Connection<'_, Db>,
+) -> Custom<Json<ResponseRequest<Option<GetAllTasks>>>> {
     let payload = PaginationPayload {
         page: filter.page.unwrap_or(1) as u64,
         size: filter.size.unwrap_or(10) as u64,
@@ -154,20 +173,22 @@ pub async fn get_tasks(filter: FilterTasks, user: JWT, conn: Connection<'_, Db>)
     let tasks = TaskQueries::get_tasks(payload, db).await;
 
     match tasks {
-        Ok(tasks_result) => {
-            Custom(Status::Ok, Json(ResponseRequest {
+        Ok(tasks_result) => Custom(
+            Status::Ok,
+            Json(ResponseRequest {
                 message: None,
                 status: 200,
                 data: Some(tasks_result),
-            }))
-        }
-        Err(_) => {
-            Custom(Status::InternalServerError, Json(ResponseRequest {
+            }),
+        ),
+        Err(_) => Custom(
+            Status::InternalServerError,
+            Json(ResponseRequest {
                 message: Some("Failed to fetch tasks".to_string()),
                 status: 500,
                 data: None,
-            }))
-        }
+            }),
+        ),
     }
 }
 #[get("/<id>")]
@@ -180,19 +201,21 @@ pub async fn get_task(
     let result = TaskQueries::get_task_by_id(id, user.claims.sub, db).await;
 
     match result {
-        Ok(task) => {
-            Custom(Status::Ok, Json(ResponseRequest {
+        Ok(task) => Custom(
+            Status::Ok,
+            Json(ResponseRequest {
                 message: None,
                 status: 200,
                 data: Some(task),
-            }))
-        }
-        Err(e) => {
-            Custom(Status::NotFound, Json(ResponseRequest {
+            }),
+        ),
+        Err(e) => Custom(
+            Status::NotFound,
+            Json(ResponseRequest {
                 message: Some(e.to_string()),
                 status: 404,
                 data: None,
-            }))
-        }
+            }),
+        ),
     }
 }

@@ -11,7 +11,7 @@ pub struct Model {
     pub description: String,
     #[sea_orm(default_value = false)]
     pub is_active: bool,
-    pub user_id: i32
+    pub user_id: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -21,7 +21,7 @@ pub enum Relation {
         from = "Column::UserId",
         to = "super::user::Column::Id"
     )]
-    User
+    User,
 }
 
 impl Related<super::user::Entity> for Entity {

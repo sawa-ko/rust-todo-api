@@ -7,9 +7,9 @@ use rocket::{fairing, routes, Build, Rocket};
 use sea_orm_rocket::Database;
 use std::env;
 
+use crate::routes::auth::{me, sign_in, sign_up};
 use crate::routes::ping::ping_route;
 use crate::routes::task::{create_task, delete_task, get_task, get_tasks, update_task};
-use crate::routes::auth::{sign_in, sign_up};
 
 async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
     let conn = &Db::fetch(&rocket).unwrap().conn;
@@ -30,10 +30,7 @@ async fn start_api() -> Result<(), rocket::Error> {
             "/task",
             routes![create_task, update_task, delete_task, get_tasks, get_task],
         )
-        .mount(
-            "/auth",
-            routes![sign_in, sign_up]
-        )
+        .mount("/auth", routes![sign_in, sign_up, me])
         .attach(Db::init())
         .attach(AdHoc::try_on_ignite("Migrations", run_migrations))
         .launch()

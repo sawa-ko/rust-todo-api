@@ -20,9 +20,7 @@ impl MigrationTrait for Migration {
             .alter_table(
                 Table::alter()
                     .table(Task::Table)
-                    .add_foreign_key(
-                        &fk_user
-                    )
+                    .add_foreign_key(&fk_user)
                     .to_owned(),
             )
             .await
@@ -31,9 +29,10 @@ impl MigrationTrait for Migration {
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
             .alter_table(
-                Table::alter().table(Task::Table)
+                Table::alter()
+                    .table(Task::Table)
                     .drop_foreign_key(Alias::new("fk_user"))
-                    .to_owned()
+                    .to_owned(),
             )
             .await
     }
@@ -46,11 +45,10 @@ enum User {
     Id,
 }
 
-
 #[derive(DeriveIden)]
 enum Task {
     #[sea_orm(iden = "tasks")]
     Table,
     #[sea_orm(iden = "user_id")]
-    UserId
+    UserId,
 }
