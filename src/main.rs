@@ -32,7 +32,7 @@ async fn start_api() -> Result<(), rocket::Error> {
         )
         .mount("/auth", routes![sign_in, sign_up, me])
         .attach(Db::init())
-        .attach(AdHoc::try_on_ignite("Migrations", run_migrations))
+        // .attach(AdHoc::try_on_ignite("Migrations", run_migrations))
         .launch()
         .await
         .map(|_| ())
