@@ -1,5 +1,6 @@
 use memory_stats::memory_stats;
 use rocket::get;
+use rocket::http::Status;
 use rocket::serde::json::Json;
 use rocket::serde::{Serialize, Deserialize};
 use sea_orm::EntityTrait;
@@ -24,7 +25,7 @@ pub async fn ping_route(conn: Connection<'_, Db>) -> Json<ResponseRequest<PingAp
 
     let result = ResponseRequest {
         message: None,
-        status: 200,
+        status: Status::Ok,
         data: PingApi {
             db_status: db_ping.is_ok(),
             tasks_total: total_tasks.unwrap().len(),

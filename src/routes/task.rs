@@ -1,4 +1,4 @@
-use crate::routes::ResponseRequest;
+use crate::routes::{Response, ResponseRequest};
 use database::entities::task as Task;
 use database::Db;
 use rocket::form::{Error, Form};
@@ -28,7 +28,7 @@ pub async fn create_task(
     form: Form<ManageTodo>,
     user: JWT,
     conn: Connection<'_, Db>,
-) -> Custom<Json<ResponseRequest<Option<Task::Model>>>> {
+) -> Response<Option<Task::Model>> {
     let db = conn.into_inner();
     let todo = form.into_inner();
 
@@ -48,7 +48,7 @@ pub async fn create_task(
             Status::Ok,
             Json(ResponseRequest {
                 message: Some("Task created successfully".to_string()),
-                status: 200,
+                status: Status::Ok,
                 data: Some(created_task),
             }),
         ),
@@ -56,7 +56,7 @@ pub async fn create_task(
             Status::InternalServerError,
             Json(ResponseRequest {
                 message: Some("Failed to create task".to_string()),
-                status: 500,
+                status: Status::InternalServerError,
                 data: None,
             }),
         ),
@@ -69,7 +69,7 @@ pub async fn update_task(
     user: JWT,
     id: i32,
     conn: Connection<'_, Db>,
-) -> Custom<Json<ResponseRequest<Option<Task::Model>>>> {
+) -> Response<Option<Task::Model>> {
     let db = conn.into_inner();
     let todo = form.into_inner();
 
@@ -90,7 +90,7 @@ pub async fn update_task(
             Status::Ok,
             Json(ResponseRequest {
                 message: Some("Task created successfully".to_string()),
-                status: 200,
+                status: Status::Ok,
                 data: Some(updated_task),
             }),
         ),
@@ -98,7 +98,7 @@ pub async fn update_task(
             Status::InternalServerError,
             Json(ResponseRequest {
                 message: Some("Failed to update task".to_string()),
-                status: 500,
+                status: Status::InternalServerError,
                 data: None,
             }),
         ),
@@ -110,7 +110,7 @@ pub async fn delete_task(
     id: i32,
     user: JWT,
     conn: Connection<'_, Db>,
-) -> Custom<Json<ResponseRequest<u64>>> {
+) -> Response<u64> {
     let db = conn.into_inner();
     let result = TaskMutation::delete(id, user.claims.sub, db).await;
 
@@ -119,7 +119,7 @@ pub async fn delete_task(
             Status::Ok,
             Json(ResponseRequest {
                 message: Some("Task created successfully".to_string()),
-                status: 200,
+                status: Status::Ok,
                 data: deleted_task.rows_affected,
             }),
         ),
@@ -127,7 +127,7 @@ pub async fn delete_task(
             Status::InternalServerError,
             Json(ResponseRequest {
                 message: Some("Failed to delete the task".to_string()),
-                status: 500,
+                status: Status::InternalServerError,
                 data: 0,
             }),
         ),
@@ -161,7 +161,7 @@ pub async fn get_tasks(
     filter: FilterTasks,
     user: JWT,
     conn: Connection<'_, Db>,
-) -> Custom<Json<ResponseRequest<Option<GetAllTasks>>>> {
+) -> Response<Option<GetAllTasks>> {
     let payload = PaginationPayload {
         page: filter.page.unwrap_or(1) as u64,
         size: filter.size.unwrap_or(10) as u64,
@@ -177,7 +177,7 @@ pub async fn get_tasks(
             Status::Ok,
             Json(ResponseRequest {
                 message: None,
-                status: 200,
+                status: Status::Ok,
                 data: Some(tasks_result),
             }),
         ),
@@ -185,7 +185,7 @@ pub async fn get_tasks(
             Status::InternalServerError,
             Json(ResponseRequest {
                 message: Some("Failed to fetch tasks".to_string()),
-                status: 500,
+                status: Status::InternalServerError,
                 data: None,
             }),
         ),
@@ -196,7 +196,7 @@ pub async fn get_task(
     id: i32,
     user: JWT,
     conn: Connection<'_, Db>,
-) -> Custom<Json<ResponseRequest<Option<TaskModel>>>> {
+) -> Response<Option<TaskModel>> {
     let db = conn.into_inner();
     let result = TaskQueries::get_task_by_id(id, user.claims.sub, db).await;
 
@@ -205,7 +205,7 @@ pub async fn get_task(
             Status::Ok,
             Json(ResponseRequest {
                 message: None,
-                status: 200,
+                status: Status::Ok,
                 data: Some(task),
             }),
         ),
@@ -213,7 +213,7 @@ pub async fn get_task(
             Status::NotFound,
             Json(ResponseRequest {
                 message: Some(e.to_string()),
-                status: 404,
+                status: Status::NotFound,
                 data: None,
             }),
         ),

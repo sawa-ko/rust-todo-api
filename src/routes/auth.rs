@@ -1,4 +1,4 @@
-use crate::routes::ResponseRequest;
+use crate::routes::{Response, ResponseRequest};
 use database::entities::user as User;
 use database::Db;
 use rocket::form::validate::msg;
@@ -26,7 +26,7 @@ pub struct SignInPayload {
 pub async fn sign_in(
     payload: Form<SignInPayload>,
     conn: Connection<'_, Db>,
-) -> Custom<Json<ResponseRequest<Option<SignIn>>>> {
+) -> Response<Option<SignIn>> {
     let db = conn.into_inner();
     let payload = payload.into_inner();
     let sign_in_result = UserMutations::sign_in(payload.username, payload.password, db).await;
@@ -35,7 +35,7 @@ pub async fn sign_in(
         Ok(sign_in) => Custom(
             Status::Ok,
             Json(ResponseRequest {
-                status: 200,
+                status: Status::Ok,
                 message: Some("Sign in successful".to_string()),
                 data: Some(sign_in),
             }),
@@ -43,7 +43,7 @@ pub async fn sign_in(
         Err(e) => Custom(
             Status::Unauthorized,
             Json(ResponseRequest {
-                status: 401,
+                status: Status::Unauthorized,
                 message: Some(e.to_string()),
                 data: None,
             }),
@@ -55,7 +55,7 @@ pub async fn sign_in(
 pub async fn sign_up(
     payload: Form<SignInPayload>,
     conn: Connection<'_, Db>,
-) -> Custom<Json<ResponseRequest<Option<User::Model>>>> {
+) -> Response<Option<User::Model>> {
     let db = conn.into_inner();
     let payload = payload.into_inner();
     let sign_up_result = UserMutations::create(payload.username, payload.password, db).await;
@@ -64,7 +64,7 @@ pub async fn sign_up(
         Ok(sign_up) => Custom(
             Status::Ok,
             Json(ResponseRequest {
-                status: 200,
+                status: Status::Ok,
                 message: Some("Sign up successful".to_string()),
                 data: Some(sign_up),
             }),
@@ -72,7 +72,7 @@ pub async fn sign_up(
         Err(e) => Custom(
             Status::Unauthorized,
             Json(ResponseRequest {
-                status: 401,
+                status: Status::Unauthorized,
                 message: Some(e.to_string()),
                 data: None,
             }),
@@ -84,7 +84,7 @@ pub async fn sign_up(
 pub async fn me(
     user: JWT,
     conn: Connection<'_, Db>,
-) -> Custom<Json<ResponseRequest<Option<UserModel>>>> {
+) -> Response<Option<UserModel>> {
     let db = conn.into_inner();
     let user = UserQueries::get_current_user(user, db).await;
 
@@ -92,7 +92,7 @@ pub async fn me(
         Ok(u) => Custom(
             Status::Ok,
             Json(ResponseRequest {
-                status: 200,
+                status: Status::Ok,
                 message: Some("Sign up successful".to_string()),
                 data: Some(u),
             }),
@@ -100,7 +100,7 @@ pub async fn me(
         Err(e) => Custom(
             Status::Unauthorized,
             Json(ResponseRequest {
-                status: 401,
+                status: Status::Unauthorized,
                 message: Some(e.to_string()),
                 data: None,
             }),
