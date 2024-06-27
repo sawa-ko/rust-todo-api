@@ -56,7 +56,9 @@ impl JWT {
             .expect("Error creating auth token: JWT_SECRET environment variable is missing");
 
         // Calculate token expiration time.
-        let exp = SystemTime::now().checked_add(Duration::from_secs(TOKEN_DURATION_SECS)).expect("Failed to calculate token expiration time");
+        let exp = SystemTime::now()
+            .checked_add(Duration::from_secs(TOKEN_DURATION_SECS))
+            .expect("Failed to calculate token expiration time");
 
         // Construct JWT claims.
         let claims = Claims {

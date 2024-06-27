@@ -1,7 +1,7 @@
 mod routes;
 
 use database::Db;
-use rocket::{routes};
+use rocket::routes;
 use sea_orm_rocket::Database;
 use std::env;
 
@@ -43,9 +43,9 @@ async fn start_api() -> Result<(), rocket::Error> {
         .mount("/auth", routes![sign_in, sign_up, me])
         .attach(Db::init()) // Initialize database connection
         // .attach(AdHoc::try_on_ignite("Migrations", run_migrations)) // Run database migrations
-        .launch()           // Launch the Rocket server
-        .await              // Await server launch completion
-        .map(|_| ())        // Map launch result to Ok(())
+        .launch() // Launch the Rocket server
+        .await // Await server launch completion
+        .map(|_| ()) // Map launch result to Ok(())
 }
 
 fn main() {

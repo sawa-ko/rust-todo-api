@@ -6,7 +6,7 @@ use rocket::form::Form;
 use rocket::http::Status;
 use rocket::response::status::Custom;
 use rocket::serde::json::Json;
-use rocket::serde::{Serialize, Deserialize};
+use rocket::serde::{Deserialize, Serialize};
 use rocket::{get, post, FromForm};
 use sea_orm_rocket::Connection;
 use services::auth::jwt::JWT;
@@ -46,7 +46,7 @@ pub async fn sign_in(
 ) -> Response<Option<SignIn>> {
     // Extract database connection and payload data
     let db = conn.into_inner();
-    
+
     // Extract payload data
     let payload = payload.into_inner();
 
@@ -96,10 +96,10 @@ pub async fn sign_up(
 ) -> Response<Option<User::Model>> {
     // Extract database connection and payload data
     let db = conn.into_inner();
-    
+
     // Extract payload data
     let payload = payload.into_inner();
-    
+
     // Attempt to create a new user account using provided credentials
     let sign_up_result = UserMutations::create(payload.username, payload.password, db).await;
 
@@ -140,13 +140,10 @@ pub async fn sign_up(
 /// A custom response (`Response<Option<UserModel>>`) with status `200 OK` on success or `401 Unauthorized` on failure.
 ///
 #[get("/me")]
-pub async fn me(
-    user: JWT,
-    conn: Connection<'_, Db>,
-) -> Response<Option<UserModel>> {
+pub async fn me(user: JWT, conn: Connection<'_, Db>) -> Response<Option<UserModel>> {
     // Extract database connection
     let db = conn.into_inner();
-    
+
     // Retrieve current user information using the provided JWT
     let user = UserQueries::get_current_user(user, db).await;
 

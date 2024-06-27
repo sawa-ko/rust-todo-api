@@ -53,7 +53,7 @@ pub async fn create_task(
 ) -> Response<Option<Task::Model>> {
     // Extract database connection
     let db = conn.into_inner();
-    
+
     // Extract payload data
     let todo = form.into_inner();
 
@@ -170,14 +170,10 @@ pub async fn update_task(
 /// A custom response (`Response<u64>`) with status `200 OK` on success or `500 Internal Server Error` on failure.
 ///
 #[delete("/delete/<id>")]
-pub async fn delete_task(
-    id: i32,
-    user: JWT,
-    conn: Connection<'_, Db>,
-) -> Response<u64> {
+pub async fn delete_task(id: i32, user: JWT, conn: Connection<'_, Db>) -> Response<u64> {
     // Extract database connection
     let db = conn.into_inner();
-    
+
     // Attempt to delete the task using provided ID
     let result = TaskMutation::delete(id, user.claims.sub, db).await;
 
@@ -280,7 +276,7 @@ pub async fn get_tasks(
 
     // Extract database connection
     let db = conn.into_inner();
-    
+
     // Attempt to fetch tasks using provided filters
     let tasks = TaskQueries::get_tasks(payload, db).await;
 
@@ -322,14 +318,10 @@ pub async fn get_tasks(
 /// `404 Not Found` if the task is not found, or `500 Internal Server Error` on failure.
 ///
 #[get("/<id>")]
-pub async fn get_task(
-    id: i32,
-    user: JWT,
-    conn: Connection<'_, Db>,
-) -> Response<Option<TaskModel>> {
+pub async fn get_task(id: i32, user: JWT, conn: Connection<'_, Db>) -> Response<Option<TaskModel>> {
     // Extract database connection
     let db = conn.into_inner();
-    
+
     // Attempt to fetch a task by ID using the provided user ID
     let result = TaskQueries::get_task_by_id(id, user.claims.sub, db).await;
 
